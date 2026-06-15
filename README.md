@@ -1,22 +1,55 @@
-# FreeRice Multiplication Bot
+// ==UserScript==
+// @name         FreeRice Multiplication Bot
+// @namespace    https://github.com/YOURUSERNAME
+// @version      1.1
+// @description  Automatically answers Multiplication Table questions on FreeRice
+// @author       Grok + Community
+// @match        https://play.freerice.com/categories/multiplication-table*
+// @grant        none
+// @license      MIT
+// ==/UserScript==
 
-A simple userscript that automatically answers **Multiplication Table** questions on [FreeRice](https://play.freerice.com).
+(function() {
+    'use strict';
 
-Every correct answer donates 10 grains of rice.
+    function getAnswer() {
+        const questionEl = document.querySelector('.card-title');
+        if (!questionEl) return null;
 
-## Features
-- Automatically detects `a × b` questions
-- Clicks the correct answer
-- Random delay to look more human
-- Auto-reloads every ~15-20 seconds (FreeRice slows down if you answer too fast)
+        const text = questionEl.textContent.trim();
+        // Expected format: "12 x 8" or similar
+        const match = text.match(/(\d+)\s*[x×]\s*(\d+)/i);
+        if (match) {
+            return parseInt(match[1]) * parseInt(match[2]);
+        }
+        return null;
+    }
 
-## Installation
+    function clickCorrectAnswer() {
+        const answer = getAnswer();
+        if (answer === null) return;
 
-1. Install **Tampermonkey** (Chrome/Firefox/Edge) or Violentmonkey.
-2. Click [here to install the script](https://github.com/YOURUSERNAME/freerice-multiplication-bot/raw/main/freerice-multiplication.user.js) (replace `YOURUSERNAME`).
-3. Go to **Multiplication Table** category on [play.freerice.com](https://play.freerice.com/categories/multiplication-table).
-4. The bot starts automatically.
+        const buttons = document.querySelectorAll('.card-button');
+        for (const btn of buttons) {
+            if (parseInt(btn.textContent.trim()) === answer) {
+                // Small random delay to look human
+                setTimeout(() => {
+                    btn.click();
+                }, 300 + Math.random() * 600);
+                return;
+            }
+        }
+    }
 
-## Manual Install
+    // Run every 800-1200ms
+    setInterval(() => {
+        clickCorrectAnswer();
+    }, 800 + Math.random() * 400);
 
-Copy the code from `freerice-multiplication.user.js` into a new Tampermonkey script.
+    // Auto reload every 15-20 seconds to prevent slowdown
+    setTimeout(() => {
+        location.reload();
+    }, 15000 + Math.random() * 5000);
+
+    console.log('%c✅ FreeRice Multiplication Bot loaded!', 'color: green; font-weight: bold');
+})();
